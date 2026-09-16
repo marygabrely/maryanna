@@ -1,5 +1,7 @@
 <?php
 if(!isset($_SESSION)) session_start();
+include "app/cons.php";
+require_once "app/DLL.php";
 extract($_POST);
 
 if(!isset($_SESSION['Logado']) || $_SESSION['Logado'] != 'sim'){
@@ -16,8 +18,6 @@ if(isset($b_registrar)){
         exit;
     }
 
-    if(!is_dir('vendas')) mkdir('vendas', 0777, true);
-
     $codigo = date('YmdHis').rand(100,999);
     $data   = date('d/m/Y H:i:s');
     $total  = 0;
@@ -31,13 +31,11 @@ if(isset($b_registrar)){
     $lista = rtrim($lista, '|');
 
     $nome_completo = isset($_SESSION['NomeCompleto']) ? $_SESSION['NomeCompleto'] : $_SESSION['Nome'];
+    $total_bd      = number_format($total, 2, '.', '');
+    $usuario_sessao = $_SESSION['Nome'];
 
-    // codigo|login|nome|produtos|data|total|pagamento
-    $linha = $codigo.'|'.$_SESSION['Nome'].'|'.$nome_completo.'|'.$lista.'|'.$data.'|'.number_format($total,2,'.',',').'|'.$pagamento;
-
-    $f = fopen('vendas/'.$codigo.'.dat', 'w');
-    fwrite($f, $linha);
-    fclose($f);
+    $consulta = "INSERT INTO pedidos (Id, Codigo, Usuario, NomeCliente, Itens, DataHora, ValorTotal, FormaPagamento) VALUES (NULL, '$codigo', '$usuario_sessao', '$nome_completo', '$lista', '$data', '$total_bd', '$pagamento')";
+    banco($server, $user, $password, $db, $consulta);
 
     $_SESSION['carrinho'] = array();
     $_SESSION['pedido_feito'] = array(
