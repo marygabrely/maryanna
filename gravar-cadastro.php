@@ -1,5 +1,7 @@
 <?php
 if(!isset($_SESSION)) session_start();
+include "app/cons.php";
+require_once "app/DLL.php";
 extract($_POST);
 
 if(isset($b_cadastrar)){
@@ -24,35 +26,32 @@ if(isset($b_cadastrar)){
         exit;
     }
 
-    if(!is_dir('usuarios')) mkdir('usuarios', 0777, true);
-    if(!is_dir('login'))    mkdir('login',    0777, true);
+    $consulta  = "SELECT * FROM clientes WHERE CPF = '$cpf_limpo'";
+    $resultado = banco($server, $user, $password, $db, $consulta);
 
-    $arq_usuario = 'usuarios/'.$cpf_limpo.'.dat';
-    $arq_login   = 'login/'.$login.'.dat';
-
-    if(file_exists($arq_usuario)){
+    if($resultado->num_rows > 0){
         $_SESSION['erro_cadastro'] = 'Este CPF ja esta cadastrado no sistema.';
         header('Location: novo-cadastro.php');
         exit;
     }
 
-    if(file_exists($arq_login)){
+    $consulta  = "SELECT * FROM acessos WHERE Usuario = '$login'";
+    $resultado = banco($server, $user, $password, $db, $consulta);
+
+    if($resultado->num_rows > 0){
         $_SESSION['erro_cadastro'] = 'Este nome de usuario ja esta em uso. Escolha outro.';
         header('Location: novo-cadastro.php');
         exit;
     }
 
-    // Salva dados pessoais: nome|cpf|endereco|bairro|cidade|estado|cep
-    $dados = $nome.'|'.$cpf_limpo.'|'.$endereco.'|'.$bairro.'|'.$cidade.'|'.$estado.'|'.$cep;
-    $fu = fopen($arq_usuario, 'w');
-    fwrite($fu, $dados);
-    fclose($fu);
+    // Salva dados pessoais na tabela clientes
+    $consulta = "INSERT INTO clientes (Id, NomeCompleto, CPF, Endereco, Bairro, Cidade, Estado, CEP) VALUES (NULL, '$nome', '$cpf_limpo', '$endereco', '$bairro', '$cidade', '$estado', '$cep')";
+    banco($server, $user, $password, $db, $consulta);
 
-    // Salva login: md5(senha)|cpf
-    $acesso = md5($senha).'|'.$cpf_limpo;
-    $fl = fopen($arq_login, 'w');
-    fwrite($fl, $acesso);
-    fclose($fl);
+    // Salva login na tabela acessos
+    $senha_hash = md5($senha);
+    $consulta   = "INSERT INTO acessos (Id, Usuario, SenhaHash, CPF) VALUES (NULL, '$login', '$senha_hash', '$cpf_limpo')";
+    banco($server, $user, $password, $db, $consulta);
 
     $_SESSION['aviso_entrar'] = 'Cadastro realizado! Faca login para continuar.';
     header('Location: entrar.php');
