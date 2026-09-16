@@ -1,38 +1,36 @@
 <?php
 if(!isset($_SESSION)) session_start();
+include "app/cons.php";
+require_once "app/DLL.php";
 extract($_POST);
 
 if(isset($b_entrar)){
 
-    $arquivo = 'login/'.$login.'.dat';
     $senha_salva = '';
+    $cpf_ref     = '';
 
-    if(file_exists($arquivo)){
-        $f = fopen($arquivo, 'r');
-        $linha = fgets($f, 500);
-        fclose($f);
+    $consulta  = "SELECT * FROM acessos WHERE Usuario = '$login'";
+    $resultado = banco($server, $user, $password, $db, $consulta);
 
-        $partes = explode('|', trim($linha));
-        $senha_salva = $partes[0];
-        $cpf_ref     = isset($partes[1]) ? $partes[1] : '';
+    if($linha = $resultado->fetch_assoc()){
+        $senha_salva = $linha['SenhaHash'];
+        $cpf_ref     = $linha['CPF'];
     }
 
     if(md5($senha) == $senha_salva && $senha_salva != ''){
 
         $_SESSION['Logado'] = 'sim';
         $_SESSION['Nome']   = $login;
-        $_SESSION['CPF']    = isset($cpf_ref) ? $cpf_ref : '';
+        $_SESSION['CPF']    = $cpf_ref;
 
-        $arq_usuario = 'usuarios/'.$cpf_ref.'.dat';
-        if(file_exists($arq_usuario)){
-            $fu = fopen($arq_usuario, 'r');
-            $du = fgets($fu, 1000);
-            fclose($fu);
-            $dados = explode('|', trim($du));
-            $_SESSION['NomeCompleto'] = isset($dados[0]) ? $dados[0] : $login;
-            $_SESSION['Endereco']     = isset($dados[2]) ? $dados[2] : '';
-            $_SESSION['Cidade']       = isset($dados[4]) ? $dados[4] : '';
-            $_SESSION['Estado']       = isset($dados[5]) ? $dados[5] : '';
+        $consulta  = "SELECT * FROM clientes WHERE CPF = '$cpf_ref'";
+        $resultado = banco($server, $user, $password, $db, $consulta);
+
+        if($dados = $resultado->fetch_assoc()){
+            $_SESSION['NomeCompleto'] = $dados['NomeCompleto'];
+            $_SESSION['Endereco']     = $dados['Endereco'];
+            $_SESSION['Cidade']       = $dados['Cidade'];
+            $_SESSION['Estado']       = $dados['Estado'];
         } else {
             $_SESSION['NomeCompleto'] = $login;
         }
