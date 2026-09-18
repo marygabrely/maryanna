@@ -1,4 +1,10 @@
+Maryanna — Por Duas, Para Todas
 
+O Maryanna é uma lojinha virtual de kits de cuidado capilar, feita pra treinar o básico de um e-commerce: vitrine de produtos, cadastro, login, sacola de compras e finalização de pedido com escolha de pagamento (PIX, Boleto ou Cartão).
+
+O cliente entra no site, escolhe o kit ideal pro tipo de cabelo dele (cacheado, crespo, liso ou ondulado), adiciona à sacola, faz login (ou cria uma conta, se ainda não tiver) e finaliza a compra. Tudo isso é salvo num banco de dados MySQL — cadastro, login e histórico de pedidos.
+
+PHP, HTML, CSS e MySQL.
 
 
 
